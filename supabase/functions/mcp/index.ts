@@ -40,7 +40,8 @@ function getBaseUrl(
 ): string {
   const url = new URL(c.req.url);
   const host = c.req.header("X-Forwarded-Host") ?? url.host;
-  const proto = c.req.header("X-Forwarded-Proto") ?? "https";
+  const proto = c.req.header("X-Forwarded-Proto") ??
+    url.protocol.replace(":", "");
   const port = c.req.header("X-Forwarded-Port") ?? url.port;
 
   // Only include port if non-standard (not 80 for http, not 443 for https)
