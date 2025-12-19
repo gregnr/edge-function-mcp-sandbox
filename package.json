@@ -1,0 +1,11 @@
+{
+  "name": "edge-function-mcp-test",
+  "version": "0.1.0",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "packageManager": "pnpm@8.10.2+sha1.e0b68270e89c817ff88b7be62466a2128c53af02",
+  "devDependencies": {
+    "supabase": "^2.67.3"
+  }
+}
