@@ -1,0 +1,13 @@
+{
+  "servers": {
+    "test": {
+      "type": "http",
+      "url": "http://127.0.0.1:54321/functions/v1/mcp"
+    },
+    "remote": {
+      "type": "http",
+      "url": "https://paalprwvwswzlcvytsfn.supabase.co/functions/v1/mcp"
+    }
+  },
+  "inputs": []
+}

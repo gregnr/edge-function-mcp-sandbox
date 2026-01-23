@@ -6,8 +6,15 @@ import * as z from "npm:zod/v4";
 import { McpServer } from "npm:@modelcontextprotocol/sdk@1.25.1/server/mcp.js";
 import { WebStandardStreamableHTTPServerTransport } from "npm:@modelcontextprotocol/sdk@1.25.1/server/webStandardStreamableHttp.js";
 import type { CallToolResult } from "npm:@modelcontextprotocol/sdk@1.25.1/types.js";
+import { createRemoteJWKSet, jwtVerify } from "npm:jose@5";
 
 const app = new Hono();
+
+// Log all requests (including unmatched routes)
+app.use("*", async (c, next) => {
+  console.log(`[${c.req.method}] ${c.req.url}`);
+  await next();
+});
 
 const server = new McpServer({
   name: "sample-mcp",
@@ -120,6 +127,7 @@ app.all("/mcp", async (c) => {
 
   const isValidToken = await validateToken(token);
   if (!isValidToken) {
+    console.error("Invalid token provided");
     return new Response(JSON.stringify({ error: "Invalid token" }), {
       status: 401,
       headers: {
@@ -131,15 +139,41 @@ app.all("/mcp", async (c) => {
     });
   }
 
+  console.log("Token validated successfully");
+
   const transport = new WebStandardStreamableHTTPServerTransport();
   await server.connect(transport);
   return transport.handleRequest(c.req.raw);
 });
 
-// Placeholder token validation - replace with actual Supabase implementation
+// Create JWKS keyset once at module load (jose handles internal caching/refresh)
+const supabaseUrl = Deno.env.get("SUPABASE_URL");
+if (!supabaseUrl) {
+  throw new Error("Missing SUPABASE_URL environment variable");
+}
+const jwks = createRemoteJWKSet(
+  new URL(`${supabaseUrl}/auth/v1/.well-known/jwks.json`),
+);
+
+// Validate token using JWKS verification
 async function validateToken(token: string): Promise<boolean> {
-  // TODO: Implement actual token validation
-  return token.length > 0; // Placeholder - accepts any non-empty token
+  try {
+    const { payload } = await jwtVerify(token, jwks);
+
+    // Check token hasn't expired (jose does this, but be explicit)
+    if (payload.exp && payload.exp < Date.now() / 1000) {
+      console.error("Token expired");
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error(
+      "Token validation error:",
+      error instanceof Error ? error.message : error,
+    );
+    return false;
+  }
 }
 
 Deno.serve(app.fetch);
