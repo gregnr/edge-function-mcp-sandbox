@@ -7,7 +7,7 @@ import { McpServer } from "npm:@modelcontextprotocol/sdk@1.25.1/server/mcp.js";
 import { WebStandardStreamableHTTPServerTransport } from "npm:@modelcontextprotocol/sdk@1.25.1/server/webStandardStreamableHttp.js";
 import type { CallToolResult } from "npm:@modelcontextprotocol/sdk@1.25.1/types.js";
 import type { RequestHandlerExtra } from "npm:@modelcontextprotocol/sdk@1.25.1/shared/protocol.js";
-import { createRemoteJWKSet, jwtVerify, type JWTPayload } from "npm:jose@5";
+import { createRemoteJWKSet, type JWTPayload, jwtVerify } from "npm:jose@5";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const app = new Hono();
@@ -22,7 +22,9 @@ app.use("*", async (c, next) => {
 const supabaseUrl = Deno.env.get("SUPABASE_URL");
 const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error("Missing SUPABASE_URL or SUPABASE_ANON_KEY environment variable");
+  throw new Error(
+    "Missing SUPABASE_URL or SUPABASE_ANON_KEY environment variable",
+  );
 }
 
 // Create JWKS keyset once at module load (jose handles internal caching/refresh)
@@ -59,6 +61,9 @@ server.registerTool(
     title: "List Notes",
     description: "List all notes for the authenticated user",
     inputSchema: {},
+    annotations: {
+      readOnlyHint: true,
+    },
   },
   async (_args, extra): Promise<CallToolResult> => {
     const supabase = createUserClient(getToken(extra));
@@ -69,7 +74,10 @@ server.registerTool(
 
     if (error) {
       return {
-        content: [{ type: "text", text: `Error listing notes: ${error.message}` }],
+        content: [{
+          type: "text",
+          text: `Error listing notes: ${error.message}`,
+        }],
         isError: true,
       };
     }
@@ -94,6 +102,10 @@ server.registerTool(
       title: z.string().describe("Title of the note"),
       content: z.string().optional().describe("Content of the note"),
     },
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: false,
+    },
   },
   async ({ title, content }, extra): Promise<CallToolResult> => {
     const supabase = createUserClient(getToken(extra));
@@ -102,7 +114,10 @@ server.registerTool(
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError ?? !user) {
       return {
-        content: [{ type: "text", text: `Error getting user: ${userError?.message ?? "No user"}` }],
+        content: [{
+          type: "text",
+          text: `Error getting user: ${userError?.message ?? "No user"}`,
+        }],
         isError: true,
       };
     }
@@ -115,7 +130,10 @@ server.registerTool(
 
     if (error) {
       return {
-        content: [{ type: "text", text: `Error creating note: ${error.message}` }],
+        content: [{
+          type: "text",
+          text: `Error creating note: ${error.message}`,
+        }],
         isError: true,
       };
     }
@@ -137,6 +155,9 @@ server.registerTool(
     inputSchema: {
       id: z.number().int().describe("ID of the note to retrieve"),
     },
+    annotations: {
+      readOnlyHint: true,
+    },
   },
   async ({ id }, extra): Promise<CallToolResult> => {
     const supabase = createUserClient(getToken(extra));
@@ -148,7 +169,10 @@ server.registerTool(
 
     if (error) {
       return {
-        content: [{ type: "text", text: `Error getting note: ${error.message}` }],
+        content: [{
+          type: "text",
+          text: `Error getting note: ${error.message}`,
+        }],
         isError: true,
       };
     }
@@ -172,11 +196,17 @@ server.registerTool(
       title: z.string().optional().describe("New title for the note"),
       content: z.string().optional().describe("New content for the note"),
     },
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: false,
+    },
   },
   async ({ id, title, content }, extra): Promise<CallToolResult> => {
     const supabase = createUserClient(getToken(extra));
 
-    const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
+    const updates: Record<string, unknown> = {
+      updated_at: new Date().toISOString(),
+    };
     if (title !== undefined) updates.title = title;
     if (content !== undefined) updates.content = content;
 
@@ -189,7 +219,10 @@ server.registerTool(
 
     if (error) {
       return {
-        content: [{ type: "text", text: `Error updating note: ${error.message}` }],
+        content: [{
+          type: "text",
+          text: `Error updating note: ${error.message}`,
+        }],
         isError: true,
       };
     }
@@ -211,6 +244,10 @@ server.registerTool(
     inputSchema: {
       id: z.number().int().describe("ID of the note to delete"),
     },
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: true,
+    },
   },
   async ({ id }, extra): Promise<CallToolResult> => {
     const supabase = createUserClient(getToken(extra));
@@ -221,7 +258,10 @@ server.registerTool(
 
     if (error) {
       return {
-        content: [{ type: "text", text: `Error deleting note: ${error.message}` }],
+        content: [{
+          type: "text",
+          text: `Error deleting note: ${error.message}`,
+        }],
         isError: true,
       };
     }
