@@ -362,29 +362,6 @@ app.get("/mcp/oauth-protected-resource", (c) => {
   });
 });
 
-app.get("/mcp/.well-known/openid-configuration", async (c) => {
-  console.log(
-    "Received request for OpenID configuration",
-    c.req.header("User-Agent"),
-  );
-
-  const url = `${supabaseUrl}/auth/v1/.well-known/oauth-authorization-server`;
-  console.log("Fetching OpenID configuration from:", url);
-
-  const response = await fetch(url);
-
-  if (!response.ok) {
-    return c.json(
-      { error: "Failed to fetch OpenID configuration" },
-      response.status as 500,
-    );
-  }
-
-  const data = await response.json();
-  console.log("OpenID configuration response:", JSON.stringify(data, null, 2));
-  return c.json(data);
-});
-
 // Handle MCP requests at the root path
 app.all("/mcp", async (c) => {
   console.log("Received MCP request", c.req.path);
