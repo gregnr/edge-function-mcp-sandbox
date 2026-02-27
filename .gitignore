@@ -1,5 +1,5 @@
 node_modules/
 .next/
 .DS_Store
-.env.local
+.env*
 supabase/signing_key.json
