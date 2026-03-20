@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "nodenext",
+    "lib": ["esnext", "dom"],
+    "strict": true,
+    "noEmit": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "experimentalDecorators": false,
+    "useDefineForClassFields": true,
+    "types": ["@types/deno", "@supabase/functions-js/src/edge-runtime.d.ts"]
+  }
+}
