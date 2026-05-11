@@ -8,9 +8,31 @@ import type { CallToolResult } from "npm:@modelcontextprotocol/sdk@1.27.1/types.
 import type { RequestHandlerExtra } from "npm:@modelcontextprotocol/sdk@1.27.1/shared/protocol.js";
 import { createContextClient, verifyAuth } from "npm:@supabase/server@1.0.0/core";
 
+// The edge runtime injects SUPABASE_URL and SUPABASE_ANON_KEY but not the
+// SUPABASE_PUBLISHABLE_KEY / SUPABASE_JWKS vars that @supabase/server expects.
+// We bridge both gaps with explicit env overrides passed to verifyAuth/createContextClient.
+const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+const publishableKeys = { default: anonKey };
+
+// JWKS: fetched from SUPABASE_URL at startup, cached in memory.
+let jwksCache: { keys: JsonWebKey[] } | null = null;
+
+async function getJwks(): Promise<{ keys: JsonWebKey[] } | null> {
+  if (jwksCache) return jwksCache;
+  try {
+    const res = await fetch(`${supabaseUrl}/auth/v1/.well-known/jwks.json`);
+    jwksCache = await res.json() as { keys: JsonWebKey[] };
+    return jwksCache;
+  } catch (err) {
+    console.error("Failed to fetch JWKS:", err);
+    return null;
+  }
+}
+
 // Helper to create a user-scoped Supabase client from a token
 function createUserClient(token: string) {
-  return createContextClient({ auth: { token } });
+  return createContextClient({ auth: { token }, env: { publishableKeys } });
 }
 
 // Helper to get token from MCP request extra
@@ -245,6 +267,7 @@ export default {
       return Response.json({
         url: req.url,
         pathname: url.pathname,
+        env: { supabaseUrl },
         computed: {
           baseUrl: getBaseUrl(req),
           resourceMetadataUrl: getResourceMetadataUrl(req),
@@ -269,7 +292,8 @@ export default {
     }
 
     if (url.pathname === "/mcp") {
-      const { data: auth, error } = await verifyAuth(req, { auth: "user" });
+      const jwks = await getJwks();
+      const { data: auth, error } = await verifyAuth(req, { auth: "user", env: { jwks, publishableKeys } });
 
       if (error) {
         return new Response(JSON.stringify({ error: error.message }), {
