@@ -15,18 +15,25 @@ const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
 const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
 const publishableKeys = { default: anonKey };
 
-// JWKS: fetched from SUPABASE_URL at startup, cached in memory.
+// Both JWKS and the canonical issuer are fetched from the auth server's
+// well-known metadata at cold start and cached in memory. Fetching the issuer
+// from metadata (not from SUPABASE_URL directly) ensures we get the externally-
+// visible URL, which matches the iss claim in JWTs even in local Docker setups
+// where SUPABASE_URL is an internal hostname (http://kong:8000).
 let jwksCache: { keys: JsonWebKey[] } | null = null;
+let issuerCache: string | null = null;
 
-async function getJwks(): Promise<{ keys: JsonWebKey[] } | null> {
-  if (jwksCache) return jwksCache;
+async function warmAuthCache(): Promise<void> {
+  if (jwksCache && issuerCache) return;
   try {
-    const res = await fetch(`${supabaseUrl}/auth/v1/.well-known/jwks.json`);
-    jwksCache = await res.json() as { keys: JsonWebKey[] };
-    return jwksCache;
+    const [jwksRes, metaRes] = await Promise.all([
+      fetch(`${supabaseUrl}/auth/v1/.well-known/jwks.json`),
+      fetch(`${supabaseUrl}/auth/v1/.well-known/oauth-authorization-server`),
+    ]);
+    jwksCache = await jwksRes.json() as { keys: JsonWebKey[] };
+    issuerCache = ((await metaRes.json()) as { issuer?: string }).issuer ?? null;
   } catch (err) {
-    console.error("Failed to fetch JWKS:", err);
-    return null;
+    console.error("Failed to fetch auth server metadata:", err);
   }
 }
 
@@ -292,8 +299,8 @@ export default {
     }
 
     if (url.pathname === "/mcp") {
-      const jwks = await getJwks();
-      const { data: auth, error } = await verifyAuth(req, { auth: "user", env: { jwks, publishableKeys } });
+      await warmAuthCache();
+      const { data: auth, error } = await verifyAuth(req, { auth: "user", env: { jwks: jwksCache, publishableKeys } });
 
       if (error) {
         return new Response(JSON.stringify({ error: error.message }), {
@@ -303,6 +310,21 @@ export default {
             ...(error.status === 401 && {
               "WWW-Authenticate": `Bearer resource_metadata="${getResourceMetadataUrl(req)}"`,
             }),
+          },
+        });
+      }
+
+      // Validate issuer: ensures the token was issued by this project's auth server.
+      // Supabase Auth doesn't support RFC 8707 resource indicators, so aud is always
+      // "authenticated" — we can't validate audience against the MCP server URL.
+      // Issuer validation is the strongest check available without changes to @supabase/server.
+      const expectedIssuer = issuerCache;
+      if (expectedIssuer && auth.jwtClaims?.iss !== expectedIssuer) {
+        return new Response(JSON.stringify({ error: "Invalid token issuer" }), {
+          status: 401,
+          headers: {
+            "Content-Type": "application/json",
+            "WWW-Authenticate": `Bearer resource_metadata="${getResourceMetadataUrl(req)}"`,
           },
         });
       }
