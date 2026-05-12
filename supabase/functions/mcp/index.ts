@@ -78,7 +78,10 @@ function createMcpServer() {
 
       if (error) {
         return {
-          content: [{ type: "text", text: `Error listing notes: ${error.message}` }],
+          content: [{
+            type: "text",
+            text: `Error listing notes: ${error.message}`,
+          }],
           isError: true,
         };
       }
@@ -86,7 +89,9 @@ function createMcpServer() {
       return {
         content: [{
           type: "text",
-          text: data.length === 0 ? "No notes found." : JSON.stringify(data, null, 2),
+          text: data.length === 0
+            ? "No notes found."
+            : JSON.stringify(data, null, 2),
         }],
       };
     },
@@ -109,10 +114,14 @@ function createMcpServer() {
     async ({ title, content }, extra): Promise<CallToolResult> => {
       const supabase = createUserClient(getToken(extra));
 
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      const { data: { user }, error: userError } = await supabase.auth
+        .getUser();
       if (userError ?? !user) {
         return {
-          content: [{ type: "text", text: `Error getting user: ${userError?.message ?? "No user"}` }],
+          content: [{
+            type: "text",
+            text: `Error getting user: ${userError?.message ?? "No user"}`,
+          }],
           isError: true,
         };
       }
@@ -125,13 +134,19 @@ function createMcpServer() {
 
       if (error) {
         return {
-          content: [{ type: "text", text: `Error creating note: ${error.message}` }],
+          content: [{
+            type: "text",
+            text: `Error creating note: ${error.message}`,
+          }],
           isError: true,
         };
       }
 
       return {
-        content: [{ type: "text", text: `Created note: ${JSON.stringify(data, null, 2)}` }],
+        content: [{
+          type: "text",
+          text: `Created note: ${JSON.stringify(data, null, 2)}`,
+        }],
       };
     },
   );
@@ -158,13 +173,19 @@ function createMcpServer() {
 
       if (error) {
         return {
-          content: [{ type: "text", text: `Error getting note: ${error.message}` }],
+          content: [{
+            type: "text",
+            text: `Error getting note: ${error.message}`,
+          }],
           isError: true,
         };
       }
 
       return {
-        content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
+        content: [{
+          type: "text",
+          text: JSON.stringify(data, null, 2),
+        }],
       };
     },
   );
@@ -187,7 +208,9 @@ function createMcpServer() {
     async ({ id, title, content }, extra): Promise<CallToolResult> => {
       const supabase = createUserClient(getToken(extra));
 
-      const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
+      const updates: Record<string, unknown> = {
+        updated_at: new Date().toISOString(),
+      };
       if (title !== undefined) updates.title = title;
       if (content !== undefined) updates.content = content;
 
@@ -200,13 +223,19 @@ function createMcpServer() {
 
       if (error) {
         return {
-          content: [{ type: "text", text: `Error updating note: ${error.message}` }],
+          content: [{
+            type: "text",
+            text: `Error updating note: ${error.message}`,
+          }],
           isError: true,
         };
       }
 
       return {
-        content: [{ type: "text", text: `Updated note: ${JSON.stringify(data, null, 2)}` }],
+        content: [{
+          type: "text",
+          text: `Updated note: ${JSON.stringify(data, null, 2)}`,
+        }],
       };
     },
   );
@@ -226,17 +255,26 @@ function createMcpServer() {
     },
     async ({ id }, extra): Promise<CallToolResult> => {
       const supabase = createUserClient(getToken(extra));
-      const { error } = await supabase.from("notes").delete().eq("id", id);
+      const { error } = await supabase
+        .from("notes")
+        .delete()
+        .eq("id", id);
 
       if (error) {
         return {
-          content: [{ type: "text", text: `Error deleting note: ${error.message}` }],
+          content: [{
+            type: "text",
+            text: `Error deleting note: ${error.message}`,
+          }],
           isError: true,
         };
       }
 
       return {
-        content: [{ type: "text", text: `Deleted note ${id}` }],
+        content: [{
+          type: "text",
+          text: `Deleted note ${id}`,
+        }],
       };
     },
   );
