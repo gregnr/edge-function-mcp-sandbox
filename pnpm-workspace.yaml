@@ -1,4 +1,11 @@
 packages:
   - 'packages/*'
   - 'examples/*'
-  - 'examples/notes-app/supabase/functions/mcp'
+
+catalog:
+  '@modelcontextprotocol/sdk': ^1.29.0
+  '@supabase/server': ^1.1.0
+  supabase: ^2.106.0
+  tsdown: ^0.12.0
+  typescript: ^5.0.0
+  vitest: ^4.0.0

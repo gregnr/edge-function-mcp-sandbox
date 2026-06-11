@@ -1,8 +1,0 @@
-{
-  "nodeModulesDir": "manual",
-  "workspace": [
-    "packages/*",
-    "examples/*",
-    "examples/notes-app/supabase/functions/mcp"
-  ]
-}
