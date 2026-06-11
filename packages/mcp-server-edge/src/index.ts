@@ -1,10 +1,3 @@
-export { createMcpHandler } from "./mcp.js";
-export { authenticate, oauthMetadata, unauthorizedResponse } from "./auth.js";
-export type {
-  AuthResult,
-  McpContext,
-  McpFactory,
-  McpHandler,
-  OAuthMetadataOptions,
-  UnauthorizedResponseOptions,
-} from "./types.js";
+export { withMcp } from './mcp.js';
+export { resourceMetadataResponse, unauthorizedResponse } from './auth.js';
+export type { ResourceMetadataOptions, UnauthorizedResponseOptions } from './types.js';

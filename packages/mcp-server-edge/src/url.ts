@@ -1,6 +1,3 @@
-const pathPrefix = '';
-// const pathPrefix = '/functions/v1';
-
 /**
  * Constructs the external-facing base URL from the request,
  * considering X-Forwarded headers set by the Supabase proxy.
@@ -11,10 +8,6 @@ export function getBaseUrl(req: Request): string {
   const proto =
     req.headers.get('X-Forwarded-Proto') ?? url.protocol.replace(':', '');
   const port = req.headers.get('X-Forwarded-Port') ?? url.port;
-
-  console.log('Host:', host);
-  console.log('Protocol:', proto);
-  console.log('Port:', port);
 
   const isStandardPort =
     (proto === 'https' && port === '443') ||
@@ -30,10 +23,10 @@ export function getBaseUrl(req: Request): string {
  * The Supabase proxy strips /functions/v1 but keeps the function name
  * as the first path segment (e.g. /mcp/... -> function name is "mcp").
  */
-export function inferFunctionName(req: Request): string {
+export function inferFunctionName(req: Request): string | undefined {
   const url = new URL(req.url);
   const segments = url.pathname.split('/').filter(Boolean);
-  return segments[0] ?? 'mcp';
+  return segments[0];
 }
 
 /**
@@ -42,8 +35,8 @@ export function inferFunctionName(req: Request): string {
  */
 export function getResourceMetadataUrl(req: Request): string {
   const baseUrl = getBaseUrl(req);
-  const functionName = inferFunctionName(req);
-  return `${baseUrl}${pathPrefix}/${functionName}/oauth-protected-resource`;
+  const functionName = inferFunctionName(req) ?? '';
+  return `${baseUrl}/${functionName}/oauth-protected-resource`;
 }
 
 /**
@@ -51,8 +44,8 @@ export function getResourceMetadataUrl(req: Request): string {
  */
 export function getMcpEndpointUrl(req: Request): string {
   const baseUrl = getBaseUrl(req);
-  const functionName = inferFunctionName(req);
-  return `${baseUrl}${pathPrefix}/${functionName}`;
+  const functionName = inferFunctionName(req) ?? '';
+  return `${baseUrl}/${functionName}`;
 }
 
 /**

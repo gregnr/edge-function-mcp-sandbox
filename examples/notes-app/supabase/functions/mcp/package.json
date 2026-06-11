@@ -5,6 +5,7 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.27.1",
     "@supabase/mcp-server-edge": "workspace:*",
+    "@supabase/server": "^1.1.0",
     "@supabase/supabase-js": "^2.98.0",
     "zod": "^4.3.6"
   },

@@ -53,9 +53,10 @@ describe("unauthenticated request", () => {
   });
 });
 
-it("GET /mcp without auth returns 401", async () => {
+it("GET /mcp without auth returns 401 (auth discovery before method check)", async () => {
   const r = await fetch(MCP_URL, { method: "GET" });
   expect(r.status).toBe(401);
+  expect(r.headers.get("www-authenticate")).toMatch(/resource_metadata=/);
 });
 
 it("invalid token returns 401", async () => {
