@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { NoteForm } from "./note-form";
 import { NoteCard } from "./note-card";
+import { LogoutButton } from "@/components/logout-button";
 import type { Note } from "./types";
 
 interface NotesClientProps {
@@ -118,9 +119,12 @@ export function NotesClient({ initialNotes }: NotesClientProps) {
     <div className="container mx-auto p-8 max-w-2xl">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Notes</h1>
-        {!isCreating && !editingId && (
-          <Button onClick={startCreate}>New Note</Button>
-        )}
+        <div className="flex gap-2">
+          {!isCreating && !editingId && (
+            <Button onClick={startCreate}>New Note</Button>
+          )}
+          <LogoutButton />
+        </div>
       </div>
 
       {error && (
