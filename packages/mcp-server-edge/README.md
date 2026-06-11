@@ -1,6 +1,8 @@
 # @supabase/mcp-server-edge
 
-MCP protocol middleware for Supabase Edge Functions. Handles OAuth discovery, `WWW-Authenticate` headers, and method routing so you can focus on your tools.
+> Build your own MCP server on Supabase Edge Functions. First-class integration with your existing Supabase project (auth + db).
+
+`@supabase/mcp-server-edge` adds MCP protocol middleware for Supabase Edge Functions. It handles OAuth discovery, `WWW-Authenticate` headers, and method routing so you can focus on your tools.
 
 Pairs with [`@supabase/server`](https://github.com/supabase/server) for auth and Supabase client access. Bring your own MCP library (e.g. [`@modelcontextprotocol/sdk`](https://github.com/modelcontextprotocol/typescript-sdk)).
 
@@ -21,7 +23,7 @@ Deno.serve(
       const server = new McpServer({ name: 'my-mcp', version: '0.1.0' });
 
       server.registerTool(
-        'get_todos',
+        'list_todos',
         {
           description: 'List todos belonging to the current user',
           inputSchema: z.object({ limit: z.number().optional().default(20) }),
