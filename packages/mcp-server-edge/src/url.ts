@@ -30,28 +30,25 @@ export function inferFunctionName(req: Request): string | undefined {
 }
 
 /**
+ * Constructs the external-facing MCP endpoint URL.
+ * Restores the /functions/v1 prefix stripped by the Supabase proxy.
+ */
+export function getMcpEndpointUrl(req: Request): string {
+  const fn = inferFunctionName(req) ?? '';
+  return `${getBaseUrl(req)}/functions/v1/${fn}`;
+}
+
+/**
  * Constructs the external-facing URL for the OAuth Protected Resource
  * Metadata endpoint (RFC 9728).
  */
 export function getResourceMetadataUrl(req: Request): string {
-  const baseUrl = getBaseUrl(req);
-  const functionName = inferFunctionName(req) ?? '';
-  return `${baseUrl}/${functionName}/oauth-protected-resource`;
-}
-
-/**
- * Constructs the external-facing MCP endpoint URL.
- */
-export function getMcpEndpointUrl(req: Request): string {
-  const baseUrl = getBaseUrl(req);
-  const functionName = inferFunctionName(req) ?? '';
-  return `${baseUrl}/${functionName}`;
+  return `${getMcpEndpointUrl(req)}/oauth-protected-resource`;
 }
 
 /**
  * Constructs the external-facing Supabase Auth URL.
  */
 export function getAuthUrl(req: Request): string {
-  const baseUrl = getBaseUrl(req);
-  return `${baseUrl}/auth/v1`;
+  return `${getBaseUrl(req)}/auth/v1`;
 }

@@ -75,6 +75,13 @@ describe('withMcp - path routing', () => {
     const body = await res.json();
     expect(String(body.resource)).toContain('my-function');
   });
+
+  it('includes /functions/v1/ prefix in resource metadata URL', async () => {
+    const res = await withMcp(passthrough)(req('GET', '/mcp/oauth-protected-resource'));
+    const body = await res.json();
+    expect(String(body.resource)).toContain('/functions/v1/mcp');
+    expect(String(body.authorization_servers[0])).toContain('/auth/v1');
+  });
 });
 
 describe('withMcp - 401 enrichment', () => {
