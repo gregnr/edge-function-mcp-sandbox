@@ -53,8 +53,9 @@ Deploy with `supabase functions deploy mcp`. The function can be named anything 
 
 Implements the [MCP specification](https://modelcontextprotocol.io/specification/2025-03-26) (Streamable HTTP transport). Confirmed working with:
 
-- [Claude Code](https://claude.ai/code)
 - [Claude.ai](https://claude.ai) (web + desktop, via the MCP connector)
+- [ChatGPT](https://chatgpt.com) (web, via ChatGPT Apps)
+- [Claude Code](https://claude.ai/code)
 - [Cursor](https://cursor.com)
 - [VS Code](https://code.visualstudio.com)
 
