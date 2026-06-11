@@ -97,29 +97,7 @@ Supabase Auth ships a built-in OAuth 2.1 authorization server. To use it with MC
 2. **Enable asymmetric JWT signing** - OAuth 2.1 requires RS256 or ES256 signed tokens. Enable this in [Auth signing keys settings](https://supabase.com/docs/guides/auth/signing-keys)
 3. **Enable dynamic client registration** - MCP clients register themselves before starting an OAuth flow. Enable this in the Auth settings
 
-Once that's in place, `withMcp` + `withSupabase` handle the rest:
-
-```mermaid
-sequenceDiagram
-    participant C as MCP Client
-    participant F as Edge Function
-    participant A as Supabase Auth
-
-    C->>F: POST /mcp (no token)
-    F->>C: 401 WWW-Authenticate: Bearer resource_metadata="https://.../mcp/oauth-protected-resource"
-
-    C->>F: GET /mcp/oauth-protected-resource
-    F->>C: { resource, authorization_servers: ["https://.../auth/v1"] }
-
-    Note over C,A: Client performs OAuth 2.1 flow with Supabase Auth
-    C->>A: GET /.well-known/oauth-authorization-server
-    A->>C: { authorization_endpoint, token_endpoint, ... }
-    C->>A: Authorization code + PKCE flow
-    A->>C: Access token
-
-    C->>F: POST /mcp (Authorization: Bearer <token>)
-    F->>C: MCP response
-```
+Once that's in place, `withMcp` + `withSupabase` handle the rest.
 
 > **Note:** The metadata endpoint lives at `/{fn}/oauth-protected-resource` rather than `/.well-known/oauth-protected-resource` because `/.well-known/` sits at the root of your Supabase project domain, not inside your edge function. This is fully supported by [RFC 9728 Section 5](https://datatracker.ietf.org/doc/html/rfc9728#section-5) - the `WWW-Authenticate` header tells clients exactly where to find the metadata, so they never need to guess.
 
