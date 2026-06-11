@@ -2,7 +2,7 @@
 
 MCP protocol middleware for Supabase Edge Functions. Handles OAuth discovery, `WWW-Authenticate` headers, and method routing so you can focus on your tools.
 
-Pairs with [`@supabase/server`](https://github.com/supabase/server) for auth and Supabase client access.
+Pairs with [`@supabase/server`](https://github.com/supabase/server) for auth and Supabase client access. Bring your own MCP library (e.g. [`@modelcontextprotocol/sdk`](https://github.com/modelcontextprotocol/typescript-sdk)).
 
 ## Quick start
 
