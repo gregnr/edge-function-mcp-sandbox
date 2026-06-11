@@ -1,3 +1,7 @@
+> ⚠️ The following library is not yet released. The README is a work in progress and may contain inaccuracies. Stay tuned for updates!
+
+---
+
 # @supabase/mcp-server-edge
 
 > Build your own MCP server on Supabase Edge Functions. First-class integration with your existing Supabase project (auth + db).
