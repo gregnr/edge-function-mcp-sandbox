@@ -32,3 +32,6 @@ create policy "Users can delete their own notes"
 
 -- Index on user_id for RLS policy performance and FK lookups
 create index notes_user_id_idx on notes(user_id);
+
+-- Grant table access to authenticated users (RLS policies handle row-level filtering)
+grant select, insert, update, delete on notes to authenticated;

@@ -8,6 +8,13 @@ import type { Database } from './database.types.ts';
 Deno.serve(
   withMcp(
     withSupabase<Database>({ auth: 'user' }, async (req, { supabase }) => {
+      const wrapError = (error: { code?: string; message: string }, id?: number): Error => {
+        switch (error.code) {
+          case 'PGRST116': return new Error(id !== undefined ? `Note ${id} not found` : 'Not found');
+          default: return new Error(error.message);
+        }
+      };
+
       const server = new McpServer({ name: 'notes-mcp', version: '0.1.0' });
 
       server.registerTool(
@@ -23,7 +30,7 @@ Deno.serve(
             .select('id, title, content, created_at, updated_at')
             .order('updated_at', { ascending: false });
 
-          if (error) throw error;
+          if (error) throw wrapError(error);
           return {
             content: [{ type: 'text' as const, text: data.length === 0 ? 'No notes found.' : JSON.stringify(data, null, 2) }],
           };
@@ -43,7 +50,7 @@ Deno.serve(
         },
         async ({ title, content }) => {
           const { data: { user }, error: userError } = await supabase.auth.getUser();
-          if (userError ?? !user) throw userError ?? new Error('No user');
+          if (userError ?? !user) throw new Error(userError?.message ?? 'No user');
 
           const { data, error } = await supabase
             .from('notes')
@@ -51,7 +58,7 @@ Deno.serve(
             .select()
             .single();
 
-          if (error) throw error;
+          if (error) throw wrapError(error);
           return {
             content: [{ type: 'text' as const, text: `Created note: ${JSON.stringify(data, null, 2)}` }],
           };
@@ -63,12 +70,12 @@ Deno.serve(
         {
           title: 'Get Note',
           description: 'Get a specific note by ID',
-          inputSchema: z.object({ id: z.number().int().describe('ID of the note to retrieve') }),
+          inputSchema: z.object({ id: z.int().describe('ID of the note to retrieve') }),
           annotations: { readOnlyHint: true },
         },
         async ({ id }) => {
           const { data, error } = await supabase.from('notes').select('*').eq('id', id).single();
-          if (error) throw error;
+          if (error) throw wrapError(error, id);
           return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] };
         },
       );
@@ -99,7 +106,7 @@ Deno.serve(
             .select()
             .single();
 
-          if (error) throw error;
+          if (error) throw wrapError(error, id);
           return {
             content: [{ type: 'text' as const, text: `Updated note: ${JSON.stringify(data, null, 2)}` }],
           };
@@ -115,8 +122,8 @@ Deno.serve(
           annotations: { readOnlyHint: false, destructiveHint: true },
         },
         async ({ id }) => {
-          const { error } = await supabase.from('notes').delete().eq('id', id);
-          if (error) throw error;
+          const { error } = await supabase.from('notes').delete().eq('id', id).select('id').single();
+          if (error) throw wrapError(error, id);
           return { content: [{ type: 'text' as const, text: `Deleted note ${id}` }] };
         },
       );
