@@ -2,4 +2,6 @@ node_modules/
 .next/
 .DS_Store
 .env*
-supabase/signing_key.json
+**/supabase/signing_key.json
+**/supabase/.edge-serve/
+**/supabase/.temp/
