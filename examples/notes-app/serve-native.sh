@@ -1,1 +1,0 @@
-/Users/grichardson/Documents/dev/supabase/edge-runtime/serve-native.sh
