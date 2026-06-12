@@ -1,12 +1,8 @@
 {
   "mcpServers": {
-    "test": {
+    "local": {
       "type": "http",
       "url": "http://127.0.0.1:54321/functions/v1/mcp"
-    },
-    "test2": {
-      "type": "http",
-      "url": "http://127.0.0.1:8081/mcp"
     },
     "remote": {
       "type": "http",
